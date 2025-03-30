@@ -60,6 +60,9 @@
                                 <button class="btn btn-success send-to-kitchen" data-id="{{ $order->id }}">
                                     <i class="fas fa-paper-plane"></i> Send to Kitchen
                                 </button>
+                                <button class="btn btn-secondary automate-send-to-kitchen" data-id="{{ $order->id }}" data-time="{{ $order->send_to_kitchen_time }}">
+                                    <i class="fas fa-clock"></i> Automate
+                                </button>
                             @endif
                         </td>
                     </tr>
@@ -69,43 +72,84 @@
     </div>
 
     <script>
-        $('#orderForm').on('submit', function(e) {
-            e.preventDefault();
-            $.ajax({
-                url: "{{ route('orders.store') }}",
-                type: "POST",
-                data: $(this).serialize(),
-                success: function(response) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Success',
-                        text: response.success,
-                    }).then(() => {
-                        location.reload();
-                    });
-                }
-            });
+    $('#orderForm').on('submit', function(e) {
+        e.preventDefault();
+        $.ajax({
+            url: "{{ route('orders.store') }}",
+            type: "POST",
+            data: $(this).serialize(),
+            success: function(response) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: response.success,
+                }).then(() => {
+                    location.reload();
+                });
+            }
+        });
+    });
+
+    $('.send-to-kitchen').on('click', function() {
+        let orderId = $(this).data('id');
+        $.ajax({
+            url: `/orders/send/${orderId}`,
+            type: "POST",
+            data: {
+                _token: "{{ csrf_token() }}"
+            },
+            success: function(response) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: response.success,
+                }).then(() => {
+                    location.reload();
+                });
+            }
+        });
+    });
+
+    $('.automate-send-to-kitchen').on('click', function() {
+        let orderId = $(this).data('id');
+        let sendTime = new Date($(this).data('time')).getTime();
+        let currentTime = new Date().getTime();
+        let timeDifference = sendTime - currentTime;
+
+        Swal.fire({
+            icon: 'info',
+            title: 'Automation Initiated',
+            text: 'This order will be sent to the kitchen automatically at the specified time.',
         });
 
-        $('.send-to-kitchen').on('click', function() {
-            let orderId = $(this).data('id');
-            $.ajax({
-                url: `/orders/send/${orderId}`,
-                type: "POST",
-                data: {
-                    _token: "{{ csrf_token() }}"
-                },
-                success: function(response) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Success',
-                        text: response.success,
-                    }).then(() => {
-                        location.reload();
-                    });
-                }
+        if (timeDifference > 0) {
+            setTimeout(() => {
+                $.ajax({
+                    url: `/orders/send/${orderId}`,
+                    type: "POST",
+                    data: {
+                        _token: "{{ csrf_token() }}"
+                    },
+                    success: function(response) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success',
+                            text: response.success,
+                        }).then(() => {
+                            location.reload();
+                        });
+                    }
+                });
+            }, timeDifference);
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Send to Kitchen Time has already passed.',
             });
-        });
-    </script>
+        }
+    });
+</script>
+
 </body>
 </html>

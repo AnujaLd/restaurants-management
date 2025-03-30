@@ -11,7 +11,7 @@ Route::get('/', function () {
 Route::get('/concession', [ConcessionController::class, 'index'])->name('concession');
 
 Route::post('/concession', [ConcessionController::class, 'store'])->name('concession.store');
-Route::put('/concession/{concession}', [ConcessionController::class, 'update'])->name('concession.update');
+Route::put('/concession/{concession}', [ConcessionController::class, 'update'])->name('concession.update');// Ensure this route is defined
 Route::delete('/concession/{concession}', [ConcessionController::class, 'destroy'])->name('concession.destroy');
 
 Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');

@@ -27,26 +27,30 @@ class OrderController extends Controller
             'status' => 'Pending',
         ]);
 
-        return response()->json(['success' => 'Order created successfully.']);
+        return redirect()->route('orders.index')->with('success', 'Order created successfully.');
     }
 
     public function sendToKitchen(Order $order)
     {
-        $order->update(['status' => 'In-Progress']);
-        return response()->json(['success' => 'Order sent to kitchen.']);
+        if ($order->status === 'Pending') {
+            $order->update(['status' => 'In-Progress']);
+            return response()->json(['success' => 'Order sent to kitchen.']);
+        } else {
+            return response()->json(['error' => 'Order cannot be sent to kitchen.'], 400);
+        }
     }
 
     public function kitchen()
     {
-        $orders = Order::where('status', '!=', 'Completed')->get();
-        $concessions = Concession::all(); 
-        return view('kitchen', compact('orders', 'concessions')); 
+        $orders = Order::where('status', '!=', 'Pending')->get();
+        $concessions = Concession::all();
+        return view('kitchen', compact('orders', 'concessions'));
     }
 
     public function updateStatus(Request $request, Order $order)
     {
         $request->validate(['status' => 'required|in:Pending,In-Progress,Completed']);
         $order->update(['status' => $request->status]);
-        return response()->json(['success' => 'Order status updated.']);
+        return redirect()->route('kitchen.index')->with('success', 'Order status updated.');
     }
 }
