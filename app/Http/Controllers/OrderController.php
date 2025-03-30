@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use App\Models\Concession;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Queue;
 
 class OrderController extends Controller
 {
@@ -28,13 +27,13 @@ class OrderController extends Controller
             'status' => 'Pending',
         ]);
 
-        return redirect()->route('orders.index')->with('success', 'Order created successfully.');
+        return response()->json(['success' => 'Order created successfully.']);
     }
 
     public function sendToKitchen(Order $order)
     {
         $order->update(['status' => 'In-Progress']);
-        return redirect()->route('kitchen.index')->with('success', 'Order sent to kitchen.');
+        return response()->json(['success' => 'Order sent to kitchen.']);
     }
 
     public function kitchen()
@@ -48,6 +47,6 @@ class OrderController extends Controller
     {
         $request->validate(['status' => 'required|in:Pending,In-Progress,Completed']);
         $order->update(['status' => $request->status]);
-        return redirect()->route('kitchen.index')->with('success', 'Order status updated.');
+        return response()->json(['success' => 'Order status updated.']);
     }
 }
